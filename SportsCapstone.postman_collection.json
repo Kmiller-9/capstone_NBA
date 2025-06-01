@@ -1,0 +1,585 @@
+{
+	"info": {
+		"_postman_id": "cb5b3252-04f6-443e-a145-63e9931d2aa4",
+		"name": "SportsCapstone",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20129677",
+		"_collection_link": "https://plato-api-testing.postman.co/workspace/API-Testing-Lab~ccc39548-e4c5-47de-878a-ba418445ff06/collection/20129677-cb5b3252-04f6-443e-a145-63e9931d2aa4?action=share&source=collection_link&creator=20129677"
+	},
+	"item": [
+		{
+			"name": "Iterate",
+			"item": [
+				{
+					"name": "Teams and Games Consective test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let responseJson = pm.response.json();\r",
+									"console.log(\"Full response:\", responseJson);\r",
+									"\r",
+									"// Fallback to default if not running with CSV\r",
+									"let teamName = (typeof data !== \"undefined\" && data.name) ? data.name : \"Boston Celtics\";\r",
+									"\r",
+									"// Ensure the response array is not empty\r",
+									"pm.test(\"Response contains at least one team\", function () {\r",
+									"    pm.expect(responseJson.response.length).to.be.above(0);\r",
+									"});\r",
+									"\r",
+									"let team = responseJson.response[0];\r",
+									"\r",
+									"pm.test(`Team name is ${teamName}`, function () {\r",
+									"    pm.expect(team.name).to.eql(teamName);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Team has an ID\", function () {\r",
+									"    pm.expect(team).to.have.property(\"id\");\r",
+									"});\r",
+									"\r",
+									"if (team && team.id) {\r",
+									"    pm.environment.set(\"TeamId\", team.id);\r",
+									"}\r",
+									"\r",
+									"// Continue using teamName in the second request\r",
+									"pm.sendRequest({\r",
+									"    url: `${pm.environment.get(\"BaseURL\")}/games?team=${pm.environment.get(\"TeamId\")}&season=2021`,\r",
+									"    method: 'GET',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'x-rapidapi-key': pm.environment.get(\"API-KEY\")\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"Request error:\", err);\r",
+									"        pm.test(\"Second request failed\", function () {\r",
+									"            pm.expect.fail(\"Request failed with error: \" + err.message);\r",
+									"        });\r",
+									"    } else {\r",
+									"        pm.test(\"Games request status is 200\", function () {\r",
+									"            pm.expect(res.code).to.eql(200);\r",
+									"        });\r",
+									"\r",
+									"        let gamesData;\r",
+									"        try {\r",
+									"            gamesData = res.json();\r",
+									"            console.log(`Games for ${teamName} in 2021:`, gamesData);\r",
+									"\r",
+									"            let wins = 0;\r",
+									"            let losses = 0;\r",
+									"\r",
+									"            gamesData.response.forEach(game => {\r",
+									"                let teamPoints, opponentPoints;\r",
+									"\r",
+									"                if (game.teams.visitors.name === teamName) {\r",
+									"                    teamPoints = game.scores.visitors.points;\r",
+									"                    opponentPoints = game.scores.home.points;\r",
+									"                } else if (game.teams.home.name === teamName) {\r",
+									"                    teamPoints = game.scores.home.points;\r",
+									"                    opponentPoints = game.scores.visitors.points;\r",
+									"                }\r",
+									"\r",
+									"                if (teamPoints > opponentPoints) {\r",
+									"                    wins += 1;\r",
+									"                } else if (teamPoints < opponentPoints) {\r",
+									"                    losses += 1;\r",
+									"                }\r",
+									"            });\r",
+									"\r",
+									"            console.log(`${teamName} Wins: ${wins}`);\r",
+									"            console.log(`${teamName} Losses: ${losses}`);\r",
+									"        } catch (e) {\r",
+									"            pm.test(\"Second response is valid JSON\", function () {\r",
+									"                pm.expect.fail(\"Failed to parse JSON from second response\");\r",
+									"            });\r",
+									"        }\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let teamName = (typeof data !== \"undefined\" && data.name) ? data.name : \"Boston Celtics\";"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-rapidapi-key",
+								"value": "{{API-KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "x-rapidapi-host",
+								"value": "v2.nba.api-sports.io",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseURL}}/teams?name={{name}}",
+							"host": [
+								"{{BaseURL}}"
+							],
+							"path": [
+								"teams"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "league",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "season",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "{{name}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Seasons",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response body contains 'seasons'\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include('seasons');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-rapidapi-key",
+						"value": "{{API-KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "x-rapidapi-host",
+						"value": "v2.nba.api-sports.io",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/seasons",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"seasons"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "live",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "league",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "season",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "team",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "No API Key in header",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 403 and error message contains 'missing application key'\", function () {\r",
+							"    pm.response.to.have.status(403);\r",
+							"\r",
+							"    const responseBody = pm.response.json();\r",
+							"    const tokenError = _.get(responseBody, 'errors.token', '');\r",
+							"\r",
+							"    pm.expect(tokenError.toLowerCase()).to.include(\"missing application key\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-rapidapi-key",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "x-rapidapi-host",
+						"value": "v2.nba.api-sports.io",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/seasons",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"seasons"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "",
+							"disabled": true
+						},
+						{
+							"key": "league",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Standard League teams Array Loop test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json().response;\r",
+							"\r",
+							"// Loop through each league entry in the response array\r",
+							"jsonData.forEach((league, index) => {\r",
+							"    console.log(`\\nLeague #${index + 1}:`);\r",
+							"\r",
+							"    // Run a test for each league item\r",
+							"    pm.test(`League items in entry #${index + 1} have required properties`, function () {\r",
+							"        pm.expect(league).to.have.property(\"id\");\r",
+							"        pm.expect(league).to.have.property(\"name\");\r",
+							"        pm.expect(league).to.have.property(\"code\");\r",
+							"        pm.expect(league).to.have.property(\"city\");\r",
+							"\r",
+							"        // Verify that 'id' is an integer\r",
+							"        pm.expect(league.id).to.be.a('number');\r",
+							"        pm.expect(Number.isInteger(league.id)).to.be.true;\r",
+							"\r",
+							"        // Print the league details to the console\r",
+							"        console.log(`  League details: ID=${league.id}, Name=${league.name}, Code=${league.code}, City=${league.city}`);\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-rapidapi-key",
+						"value": "{{API-KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "x-rapidapi-host",
+						"value": "v2.nba.api-sports.io",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/teams?league=standard",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"teams"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "",
+							"disabled": true
+						},
+						{
+							"key": "name",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "code",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "league",
+							"value": "standard"
+						},
+						{
+							"key": "confrence",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "division",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "search",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sample Delete with try catch",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const expectedStatusCode = 405;\r",
+							"const actualStatusCode = pm.response.code;\r",
+							"\r",
+							"if (actualStatusCode === expectedStatusCode) {\r",
+							"    pm.test(`✅ Received expected ${expectedStatusCode} Method Not Allowed`, function () {\r",
+							"        pm.expect(actualStatusCode).to.eql(expectedStatusCode);\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test.skip(`⚠️ Skipping tests because expected status code ${expectedStatusCode} was not received (got ${actualStatusCode})`, function () {\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-rapidapi-key",
+						"value": "{{API-KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "x-rapidapi-host",
+						"value": "v2.nba.api-sports.io",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"leagues\": \"africa\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseURL}}/leagues",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"leagues"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sample Post with Random Variables",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const expectedStatusCode = 405;\r",
+							"const actualStatusCode = pm.response.code;\r",
+							"\r",
+							"if (actualStatusCode === expectedStatusCode) {\r",
+							"    pm.test(`✅ Received expected ${expectedStatusCode} Method Not Allowed`, function () {\r",
+							"        pm.expect(actualStatusCode).to.eql(expectedStatusCode);\r",
+							"    });\r",
+							"} else {\r",
+							"    pm.test.skip(`⚠️ Skipping tests because expected status code ${expectedStatusCode} was not received (got ${actualStatusCode})`, function () {\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-rapidapi-key",
+						"value": "{{API-KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "x-rapidapi-host",
+						"value": "v2.nba.api-sports.io",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"{{random_id}}\",\r\n    \"name\": \"{{random_firstName}} {{$randomLastName}}\",\r\n    \"country\": \"USA\",\r\n    \"team\": 2\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseURL}}/players",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"players"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
