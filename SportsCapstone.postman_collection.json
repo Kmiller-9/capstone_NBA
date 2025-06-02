@@ -201,12 +201,13 @@
 			"name": "Main",
 			"item": [
 				{
-					"name": "Seasons",
+					"name": "Seasons test",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									"// Basic checks\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
@@ -215,9 +216,22 @@
 									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response body contains 'seasons'\", function () {\r",
-									"    pm.expect(pm.response.text()).to.include('seasons');\r",
-									"});\r",
+									"// Conditional logic based on selected season\r",
+									"const season = parseInt(pm.environment.get(\"season\"));\r",
+									"const responseJson = pm.response.json();\r",
+									"\r",
+									"if ([2021, 2022, 2023].includes(season)) {\r",
+									"    pm.test(`Season ${season} should return data without error`, function () {\r",
+									"        pm.expect(responseJson).to.not.have.property(\"errors\");\r",
+									"        pm.expect(responseJson.response.length).to.be.above(0);\r",
+									"    });\r",
+									"} else {\r",
+									"    pm.test(`Season ${season} should return an access error`, function () {\r",
+									"        pm.expect(responseJson).to.have.property(\"errors\");\r",
+									"        pm.expect(responseJson.errors.plan).to.include(\"Free plans do not have access to this season\");\r",
+									"        pm.expect(responseJson.response.length).to.eql(0);\r",
+									"    });\r",
+									"}\r",
 									"\r",
 									"\r",
 									"\r",
@@ -231,7 +245,17 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									""
+									"// Define the list of available seasons\r",
+									"const seasons = [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];\r",
+									"\r",
+									"// Pick a random season\r",
+									"const randomSeason = seasons[Math.floor(Math.random() * seasons.length)];\r",
+									"\r",
+									"// Set the selected season as an environment variable\r",
+									"pm.environment.set(\"season\", randomSeason);\r",
+									"\r",
+									"// log it to the Postman console\r",
+									"console.log(\"Selected season:\", randomSeason);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -253,38 +277,21 @@
 							}
 						],
 						"url": {
-							"raw": "{{BaseURL}}/seasons",
+							"raw": "{{BaseURL}}/players?season={{season}}&team={{TeamId}}",
 							"host": [
 								"{{BaseURL}}"
 							],
 							"path": [
-								"seasons"
+								"players"
 							],
 							"query": [
 								{
-									"key": "date",
-									"value": null,
-									"disabled": true
-								},
-								{
-									"key": "live",
-									"value": null,
-									"disabled": true
-								},
-								{
-									"key": "league",
-									"value": null,
-									"disabled": true
-								},
-								{
 									"key": "season",
-									"value": null,
-									"disabled": true
+									"value": "{{season}}"
 								},
 								{
 									"key": "team",
-									"value": null,
-									"disabled": true
+									"value": "{{TeamId}}"
 								}
 							]
 						}
@@ -350,18 +357,6 @@
 							],
 							"path": [
 								"seasons"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "",
-									"disabled": true
-								},
-								{
-									"key": "league",
-									"value": "",
-									"disabled": true
-								}
 							]
 						}
 					},
