@@ -1,61 +1,61 @@
 name: Run Newman Tests
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-      - name: Install Newman and HTML Reporter
-        run: |
-          npm install -g newman
-          npm install -g newman-reporter-htmlextra
+      - name: Install Newman and HTML Reporter
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
 
-      - name: Run 'Iterate' Folder with Data File
-        run: |
-          newman run SportsCapstone.postman_collection.json \
-            -e SportsAPI_NBA.postman_environment.json \
-            --folder "Iterate" \
-            --iteration-data teams_data.csv \
-            -r json,htmlextra \
-            --reporter-json-export results_iterate.json \
-            --reporter-htmlextra-export results_iterate.html
+      - name: Run 'Iterate' Folder with Data File
+        run: |
+          newman run SportsCapstone.postman_collection.json \
+            -e SportsAPI_NBA.postman_environment.json \
+            --folder "Iterate" \
+            --iteration-data teams_data.csv \
+            -r json,htmlextra \
+            --reporter-json-export results_iterate.json \
+            --reporter-htmlextra-export results_iterate.html
 
-      - name: Run Remaining Collection (excluding 'Iterate')
-        run: |
-          newman run SportsCapstone.postman_collection.json \
-            -e SportsAPI_NBA.postman_environment.json \
-            --exclude-folder "Iterate" \
-            -r json,htmlextra \
-            --reporter-json-export results_main.json \
-            --reporter-htmlextra-export results_main.html
+      - name: Run Remaining Collection (excluding 'Iterate')
+        run: |
+          newman run SportsCapstone.postman_collection.json \
+            -e SportsAPI_NBA.postman_environment.json \
+            --exclude-folder "Iterate" \
+            -r json,htmlextra \
+            --reporter-json-export results_main.json \
+            --reporter-htmlextra-export results_main.html
 
-      - name: Upload JSON Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: newman-json-reports
-          path: |
-            results_iterate.json
-            results_main.json
+      - name: Upload JSON Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-json-reports
+          path: |
+            results_iterate.json
+            results_main.json
 
-      - name: Upload HTML Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: newman-html-reports
-          path: |
-            results_iterate.html
-            results_main.html
+      - name: Upload HTML Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-html-reports
+          path: |
+            results_iterate.html
+            results_main.html
